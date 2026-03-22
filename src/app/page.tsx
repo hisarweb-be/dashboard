@@ -1,5 +1,3 @@
-export const dynamic = 'force-dynamic';
-
 import { fetchAPI } from "@/lib/api";
 
 export default async function DashboardPage() {
