@@ -23,8 +23,12 @@ export async function fetchAPI(endpoint: string) {
     const res = await Promise.race([fetchPromise, timeoutPromise]) as Response;
     if (!res || !res.ok) return null;
     return await res.json();
-  } catch (error) {
-    console.warn(`[API FETCH FAILED] ${endpoint}`, error);
+  } catch (error: any) {
+    // Rethrow Next.js internal control flow errors (redirect, static bailout)
+    if (error && typeof error === 'object' && ('digest' in error || error.message?.includes('Dynamic server usage'))) {
+      throw error;
+    }
+    console.warn(`[API FETCH FAILED] ${endpoint}`, error?.message || error);
     return null;
   }
 }
