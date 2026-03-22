@@ -6,12 +6,15 @@ export async function fetchAPI(endpoint: string) {
     const sep = endpoint.includes('?') ? '&' : '?';
     const res = await fetch(`${API_URL}${endpoint}${sep}apiKey=${API_KEY}`, {
       cache: 'no-store',
-      signal: AbortSignal.timeout(10000),
+      // Reduce timeout because Vercel kills functions at 10s (Hobby tier).
+      // We need to catch it earlier to render a fallback page instead of crashing with 500.
+      signal: AbortSignal.timeout(4000),
     });
     if (!res.ok) return null;
     const json = await res.json();
     return json;
-  } catch {
+  } catch (error) {
+    console.warn(`[API FETCH FAILED] ${endpoint}`, error);
     return null;
   }
 }

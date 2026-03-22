@@ -1,9 +1,11 @@
 import { fetchAPI } from "@/lib/api";
 
 export default async function DashboardPage() {
-  const analyticsRes = await fetchAPI("/api/v1/analytics/overview");
-  const orgsRes = await fetchAPI("/api/v1/organizations");
-  const prospectsRes = await fetchAPI("/api/v1/prospects");
+  const [analyticsRes, orgsRes, prospectsRes] = await Promise.all([
+    fetchAPI("/api/v1/analytics/overview"),
+    fetchAPI("/api/v1/organizations"),
+    fetchAPI("/api/v1/prospects")
+  ]);
 
   const analytics = analyticsRes?.data ?? {};
   const totalOrgs = orgsRes?.pagination?.total ?? orgsRes?.data?.length ?? 0;
