@@ -20,6 +20,9 @@ export async function fetchAPI(endpoint: string) {
       signal: controller.signal,
     });
 
+    // Prevent unhandled promise rejection crashing Node.js
+    fetchPromise.catch(() => { });
+
     const res = await Promise.race([fetchPromise, timeoutPromise]) as Response;
     if (!res || !res.ok) return null;
     return await res.json();
