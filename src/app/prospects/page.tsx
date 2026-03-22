@@ -1,38 +1,20 @@
 import { fetchAPI } from "@/lib/api";
-import type { Prospect } from "@/lib/types";
 import Link from "next/link";
 
 const statusColors: Record<string, string> = {
   DISCOVERED: "bg-gray-500/20 text-gray-400",
   ENRICHED: "bg-blue-500/20 text-blue-400",
+  PROSPECT_IDENTIFIED: "bg-cyan-500/20 text-cyan-400",
   CONTACTED: "bg-yellow-500/20 text-yellow-400",
+  CONNECTED: "bg-orange-500/20 text-orange-400",
+  REPLIED: "bg-amber-500/20 text-amber-400",
   QUALIFIED: "bg-green-500/20 text-green-400",
+  MEETING_INVITED: "bg-indigo-500/20 text-indigo-400",
   MEETING_BOOKED: "bg-purple-500/20 text-purple-400",
+  PROPOSAL: "bg-pink-500/20 text-pink-400",
   WON: "bg-emerald-500/20 text-emerald-400",
+  LOST: "bg-red-500/20 text-red-400",
 };
-
-function StatusBadge({ status }: { status: string }) {
-  const color = statusColors[status] || "bg-gray-500/20 text-gray-400";
-  return (
-    <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${color}`}>
-      {status}
-    </span>
-  );
-}
-
-function LeadScoreBar({ score }: { score: number }) {
-  return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1 bg-[#2a2a2a] rounded-full h-2 w-20 overflow-hidden">
-        <div
-          className="bg-blue-500 h-full rounded-full"
-          style={{ width: `${score * 100}%` }}
-        />
-      </div>
-      <span className="text-gray-400 text-xs w-8">{(score * 100).toFixed(0)}%</span>
-    </div>
-  );
-}
 
 export default async function ProspectsPage({
   searchParams,
@@ -41,99 +23,85 @@ export default async function ProspectsPage({
 }) {
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
-  const perPage = 20;
 
-  let prospects: Prospect[] = [];
-  let total = 0;
-
-  try {
-    const data = await fetchAPI(`/api/v1/prospects?page=${currentPage}&limit=${perPage}`);
-    if (Array.isArray(data)) {
-      prospects = data;
-      total = data.length;
-    } else {
-      prospects = data.data || [];
-      total = data.total ?? prospects.length;
-    }
-  } catch {
-    // fallback
-  }
-
-  const totalPages = Math.max(1, Math.ceil(total / perPage));
+  const res = await fetchAPI(`/api/v1/prospects?page=${currentPage}&limit=20`);
+  const prospects = res?.data ?? [];
+  const pagination = res?.pagination ?? { total: 0, totalPages: 1 };
 
   return (
     <div>
       <h1 className="text-2xl font-bold text-white mb-8">Prospects</h1>
 
-      <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#2a2a2a]">
-                <th className="text-left px-4 py-3 text-gray-400 font-medium">Naam</th>
-                <th className="text-left px-4 py-3 text-gray-400 font-medium">Titel</th>
-                <th className="text-left px-4 py-3 text-gray-400 font-medium">Bedrijf</th>
-                <th className="text-left px-4 py-3 text-gray-400 font-medium">Lead Score</th>
-                <th className="text-left px-4 py-3 text-gray-400 font-medium">Status</th>
-                <th className="text-left px-4 py-3 text-gray-400 font-medium">Taal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {prospects.length === 0 ? (
-                <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center text-gray-400">
-                    Geen prospects gevonden.
-                  </td>
-                </tr>
-              ) : (
-                prospects.map((prospect) => (
-                  <tr key={prospect.id} className="border-b border-[#2a2a2a] hover:bg-[#222] transition-colors">
-                    <td className="px-4 py-3 text-white font-medium">
-                      {prospect.firstName} {prospect.lastName}
-                    </td>
-                    <td className="px-4 py-3 text-gray-400">{prospect.title}</td>
-                    <td className="px-4 py-3 text-gray-400">{prospect.organizationName}</td>
-                    <td className="px-4 py-3">
-                      <LeadScoreBar score={prospect.leadScore} />
-                    </td>
-                    <td className="px-4 py-3">
-                      <StatusBadge status={prospect.status} />
-                    </td>
-                    <td className="px-4 py-3 text-gray-400">{prospect.language}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+      {!res ? (
+        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg p-6">
+          <p className="text-gray-400">Kan geen verbinding maken met de API.</p>
         </div>
+      ) : (
+        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg shadow overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-[#2a2a2a]">
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Naam</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Titel</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Bedrijf</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Lead Score</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Status</th>
+                  <th className="text-left px-4 py-3 text-gray-400 font-medium">Taal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prospects.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-4 py-8 text-center text-gray-400">Geen prospects gevonden.</td>
+                  </tr>
+                ) : (
+                  prospects.map((p: Record<string, unknown>) => {
+                    const org = p.organization as Record<string, unknown> | undefined;
+                    const score = (p.leadScore as number) ?? 0;
+                    const status = (p.status as string) ?? "DISCOVERED";
+                    const badgeColor = statusColors[status] || "bg-gray-500/20 text-gray-400";
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2a2a]">
-            <p className="text-sm text-gray-400">
-              Pagina {currentPage} van {totalPages} ({total} totaal)
-            </p>
-            <div className="flex gap-2">
-              {currentPage > 1 && (
-                <Link
-                  href={`/prospects?page=${currentPage - 1}`}
-                  className="px-3 py-1.5 rounded bg-[#2a2a2a] text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  Vorige
-                </Link>
-              )}
-              {currentPage < totalPages && (
-                <Link
-                  href={`/prospects?page=${currentPage + 1}`}
-                  className="px-3 py-1.5 rounded bg-[#2a2a2a] text-gray-400 hover:text-white text-sm transition-colors"
-                >
-                  Volgende
-                </Link>
-              )}
-            </div>
+                    return (
+                      <tr key={p.id as string} className="border-b border-[#2a2a2a] hover:bg-[#222] transition-colors">
+                        <td className="px-4 py-3 text-white font-medium">{p.fullName as string}</td>
+                        <td className="px-4 py-3 text-gray-400">{p.title as string}</td>
+                        <td className="px-4 py-3 text-gray-400">{(org?.name as string) ?? "-"}</td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <div className="flex-1 bg-[#2a2a2a] rounded-full h-2 w-20 overflow-hidden">
+                              <div className="bg-blue-500 h-full rounded-full" style={{ width: `${score * 100}%` }} />
+                            </div>
+                            <span className="text-gray-400 text-xs w-8">{(score * 100).toFixed(0)}%</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${badgeColor}`}>{status}</span>
+                        </td>
+                        <td className="px-4 py-3 text-gray-400">{(p.language as string) ?? "-"}</td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+
+          {pagination.totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t border-[#2a2a2a]">
+              <p className="text-sm text-gray-400">Pagina {currentPage} van {pagination.totalPages} ({pagination.total} totaal)</p>
+              <div className="flex gap-2">
+                {currentPage > 1 && (
+                  <Link href={`/prospects?page=${currentPage - 1}`} className="px-3 py-1.5 rounded bg-[#2a2a2a] text-gray-400 hover:text-white text-sm">Vorige</Link>
+                )}
+                {currentPage < pagination.totalPages && (
+                  <Link href={`/prospects?page=${currentPage + 1}`} className="px-3 py-1.5 rounded bg-[#2a2a2a] text-gray-400 hover:text-white text-sm">Volgende</Link>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
