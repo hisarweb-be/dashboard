@@ -64,7 +64,11 @@ export default async function ProspectsPage({
 
                     return (
                       <tr key={p.id as string} className="border-b border-[#2a2a2a] hover:bg-[#222] transition-colors">
-                        <td className="px-4 py-3 text-white font-medium">{p.fullName as string}</td>
+                        <td className="px-4 py-3 text-white font-medium">
+                          <Link href={`/prospects/${p.id as string}`} className="hover:text-blue-400 transition-colors">
+                            {p.fullName as string}
+                          </Link>
+                        </td>
                         <td className="px-4 py-3 text-gray-400">{p.title as string}</td>
                         <td className="px-4 py-3 text-gray-400">{(org?.name as string) ?? "-"}</td>
                         <td className="px-4 py-3">
@@ -92,10 +96,10 @@ export default async function ProspectsPage({
               <p className="text-sm text-gray-400">Pagina {currentPage} van {pagination.totalPages} ({pagination.total} totaal)</p>
               <div className="flex gap-2">
                 {currentPage > 1 && (
-                  <Link href={`/prospects?page=${currentPage - 1}`} className="px-3 py-1.5 rounded bg-[#2a2a2a] text-gray-400 hover:text-white text-sm">Vorige</Link>
+                  <Link href={`/prospects?page=${currentPage - 1}`} className="px-3 py-1.5 rounded bg-[#2a2a2a] hover:bg-[#333] text-gray-400 hover:text-white text-sm transition-colors">Vorige</Link>
                 )}
                 {currentPage < pagination.totalPages && (
-                  <Link href={`/prospects?page=${currentPage + 1}`} className="px-3 py-1.5 rounded bg-[#2a2a2a] text-gray-400 hover:text-white text-sm">Volgende</Link>
+                  <Link href={`/prospects?page=${currentPage + 1}`} className="px-3 py-1.5 rounded bg-[#2a2a2a] hover:bg-[#333] text-gray-400 hover:text-white text-sm transition-colors">Volgende</Link>
                 )}
               </div>
             </div>
